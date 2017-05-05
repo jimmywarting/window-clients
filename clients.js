@@ -1,25 +1,15 @@
 (() => {
-  // Set the name of the hidden property and the change event for visibility
-  var hidden, visibilityChange 
-  if (typeof document.hidden !== 'undefined') { // Opera 12.10 and Firefox 18 and later support 
-    hidden = 'hidden'
-    visibilityChange = 'visibilitychange'
-  } else if (typeof document.webkitHidden !== 'undefined') {
-    hidden = 'webkitHidden'
-    visibilityChange = 'webkitvisibilitychange'
-  }
-
   // My own identity
   const ID = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
     let r = Math.random()*16|0, v = c == 'x' ? r : (r&0x3|0x8)
     return v.toString(16)
   })
 
-  // holds all client id's
-  let idMap = {}
-  // document visibilityChange syncs data after unload event
-  let installed = true
-
+  let installed = true // document visibilityChange syncs data after unload event
+  let bc = new BroadcastChannel('$clients$polyfill$')
+  let hidden
+  let visibilityChange
+  
   // This is my window state
   let state = {
     focused: document.hasFocus(),
@@ -27,7 +17,18 @@
     url: location.href
   }
   
-  let bc = new BroadcastChannel('$clients$polyfill$')
+  // holds all client id's
+  const idMap = {}
+  
+  // Set the name of the hidden property and the change event for visibility
+  if (typeof document.hidden !== 'undefined') {
+    hidden = 'hidden'
+    visibilityChange = 'visibilitychange'
+  } else if (typeof document.webkitHidden !== 'undefined') {
+    hidden = 'webkitHidden'
+    visibilityChange = 'webkitvisibilitychange'
+  }
+  
   bc.onmessage = evt => {
     let [id, type, data] = evt.data
     
